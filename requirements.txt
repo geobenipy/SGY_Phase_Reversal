@@ -1,0 +1,12 @@
+# Core dependencies for SEG-Y Phase Reversal Processor
+# Install with: pip install -r requirements.txt
+
+numpy>=1.20.0
+matplotlib>=3.3.0
+scipy>=1.6.0
+segyio>=1.9.0
+tqdm>=4.60.0
+seaborn>=0.11.0
+
+# Optional: Alternative SEG-Y reader
+# obspy>=1.2.0
