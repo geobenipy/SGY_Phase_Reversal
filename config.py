@@ -1,84 +1,153 @@
 """
-config.py - Configuration File
-===============================
-Adjust all settings here before running the processor.
+config.py - Configuration File for Phase Rotation Detector
+===========================================================
+Configure all settings for detecting phase-rotated reflectors.
 """
 
 from pathlib import Path
 
 # =============================================================================
-# PATHS - Set your input and output directories here
+# PATHS - Set your input and output directories
 # =============================================================================
 
-INPUT_DIR = Path(r"D:\Haimerl\PhD\Vista\AL641\Export\ReProc\Finished")  # Your SEG-Y input folder
-OUTPUT_DIR = Path(r"E:\Miscellaneous\Skripte&Tutorials\Phase_Reversal\Output")  # Output folder for results
-
-# Alternative: Use relative paths
-# INPUT_DIR = Path("./data/input")
-# OUTPUT_DIR = Path("./data/output")
+INPUT_DIR = Path(r"D:\Haimerl\PhD\Vista\AL641\Export\ReProc\Finished")
+OUTPUT_DIR = Path(r"E:/Miscellaneous/Skripte&Tutorials/Phase_Reversal/Output_complextrace")
 
 
 # =============================================================================
-# PROCESSING SETTINGS
+# REFERENCE HORIZON SETTINGS
 # =============================================================================
 
-# Phase reversal (180° phase shift)
-PHASE_REVERSAL = True
+# Reference horizon type: 'seafloor', 'manual', or 'auto'
+# - 'seafloor': Automatically detect seafloor as reference
+# - 'manual': Use manually specified time window
+# - 'auto': Automatically detect strongest continuous reflector
+REFERENCE_TYPE = 'seafloor'
 
-# Normalize amplitudes to [-1, 1] range
-NORMALIZE_AMPLITUDES = True
+# Manual reference time window (ms) - only used if REFERENCE_TYPE = 'manual'
+MANUAL_REFERENCE_START = 500
+MANUAL_REFERENCE_END = 600
+
+# Seafloor detection parameters
+SEAFLOOR_SEARCH_START = 0      # Start time (ms) for seafloor search
+SEAFLOOR_SEARCH_END = 500      # End time (ms) for seafloor search
+SEAFLOOR_THRESHOLD = 0.6       # Amplitude threshold (0-1) for seafloor detection
+
+
+# =============================================================================
+# PHASE ANALYSIS SETTINGS
+# =============================================================================
+
+# Analysis window size (samples) for local phase estimation
+ANALYSIS_WINDOW = 32
+
+# Threshold for phase rotation detection (degrees)
+# Values above this threshold indicate significant phase rotation
+PHASE_ROTATION_THRESHOLD = 45.0
+
+# Instantaneous phase computation method: 'hilbert' or 'complex_trace'
+PHASE_METHOD = 'complex_trace'
+
+# Smooth phase estimates over traces (reduces noise)
+SMOOTH_PHASES = True
+SMOOTHING_WINDOW = 5  # Number of traces for smoothing
+
+
+# =============================================================================
+# ATTRIBUTE COMPUTATION
+# =============================================================================
+
+# Output attribute type: 'indicator', 'full_phase', or 'both'
+# - 'indicator': Sparse attribute showing phase rotation ONLY at reflectors (RECOMMENDED)
+# - 'full_phase': Dense attribute showing phase everywhere
+# - 'both': Generate both types of output
+OUTPUT_ATTRIBUTE = 'both'
+
+# Reflector detection threshold (percentile of envelope)
+# Higher = only strongest reflectors, Lower = more reflectors detected
+REFLECTOR_THRESHOLD_PERCENTILE = 70.0
+
+# Taper width around reflectors (samples)
+# Expands the indicator slightly around detected reflectors
+INDICATOR_TAPER_WIDTH = 3
+
+# Normalize output to [-1, 1] range for better visualization
+NORMALIZE_OUTPUT = True
+
+# Apply gain to enhance subtle phase rotations
+APPLY_GAIN = True
+GAIN_FACTOR = 2.0
+
+
+# =============================================================================
+# PROCESSING OPTIONS
+# =============================================================================
 
 # Number of parallel workers (None = use all CPU cores)
-MAX_WORKERS = 1  # or set to specific number like 4, 8, etc.
+MAX_WORKERS = None
+
+# Create QC plots
+CREATE_QC_PLOTS = True
+
+# Create detailed analysis plots per file
+CREATE_DETAILED_PLOTS = True
+
+# Export statistics to CSV
+EXPORT_STATISTICS = True
 
 
 # =============================================================================
 # OUTPUT OPTIONS
 # =============================================================================
 
-# Create individual processed SEG-Y files
-CREATE_INDIVIDUAL_SEGY = True
+# Create individual SEG-Y output for each input file
+CREATE_INDIVIDUAL_OUTPUTS = True
 
-# Create combined SEG-Y file from all inputs
-CREATE_COMBINED_SEGY = True
+# SEG-Y output format
+# Use same format as input (preserves all headers)
+PRESERVE_INPUT_HEADERS = True
 
-# Create overlay plot (PNG)
-CREATE_OVERLAY_PLOT = True
-
-# Create QC reports for each file
-CREATE_QC_REPORTS = True
-
-# Create before/after comparison plots
-CREATE_COMPARISON_PLOTS = True
+# Output filename suffix
+OUTPUT_SUFFIX = '_phase_rotation'
 
 
 # =============================================================================
-# PLOTTING SETTINGS
+# VISUALIZATION SETTINGS
 # =============================================================================
 
-# Plot type: 'wiggle', 'density', or 'both'
-PLOT_TYPE = 'both'
+# Colormap for phase rotation visualization
+# Recommended: 'seismic', 'RdBu', 'twilight', 'hsv'
+PHASE_COLORMAP = 'RdBu'
 
-# Figure size in inches (width, height)
+# Figure size for plots (width, height in inches)
 FIGURE_SIZE = (16, 10)
 
-# Resolution in DPI
+# Plot resolution (DPI)
 DPI = 300
 
-# Colormap for seismic data
-COLORMAP = 'seismic'
+# Show seafloor pick on plots
+SHOW_SEAFLOOR_PICK = True
 
 
 # =============================================================================
-# FILE FILTERS
+# ADVANCED SETTINGS
 # =============================================================================
 
-# File extensions to process (case-insensitive)
-FILE_EXTENSIONS = ['.sgy', '.segy']
+# Minimum coherency threshold for valid phase estimates
+# Low coherency indicates noise - phase estimates will be attenuated
+MIN_COHERENCY = 0.3
 
-# Optional: Filename pattern filter (None = process all)
-# Example: FILENAME_PATTERN = '*line*' to only process files with 'line' in name
-FILENAME_PATTERN = None
+# Frequency band for analysis (Hz) - None for full bandwidth
+# Example: (10, 80) for 10-80 Hz bandpass
+FREQUENCY_BAND = None
+
+# Time gate for analysis (ms) - None for full time range
+# Example: (500, 2000) to analyze only between 500-2000 ms
+TIME_GATE = None
+
+# Trace decimation for faster processing (1 = no decimation)
+# Example: 2 = use every 2nd trace, 5 = use every 5th trace
+TRACE_DECIMATION = 1
 
 
 # =============================================================================
@@ -86,7 +155,7 @@ FILENAME_PATTERN = None
 # =============================================================================
 
 # Logging level: 'DEBUG', 'INFO', 'WARNING', 'ERROR'
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'WARNING'
 
 # Log to file
 LOG_TO_FILE = True
@@ -95,34 +164,24 @@ LOG_TO_FILE = True
 LOG_TO_CONSOLE = True
 
 # Log filename
-LOG_FILENAME = r"E:\Miscellaneous\Skripte&Tutorials\Phase_Reversal\Output\segy_processing.log"
+LOG_FILENAME = 'phase_rotation_detection.log'
 
 
 # =============================================================================
-# ADVANCED SETTINGS
+# FILE FILTERS
 # =============================================================================
 
-# Clip percentile for plotting (to avoid extreme values)
-PLOT_CLIP_PERCENTILE = 99
+# File extensions to process
+FILE_EXTENSIONS = ['.sgy', '.segy']
 
-# Frequency range for spectral analysis (Hz)
-FREQUENCY_RANGE = (0, 250)
-
-# Number of traces to use for QC analysis (None = all)
-QC_TRACE_LIMIT = None
-
-# Export metadata to CSV
-EXPORT_METADATA_CSV = True
-
-# Export metadata to JSON
-EXPORT_METADATA_JSON = True
+# Filename pattern filter (None = process all)
+FILENAME_PATTERN = None
 
 
 # =============================================================================
-# OUTPUT FILENAMES (Optional customization)
+# OUTPUT FILENAMES
 # =============================================================================
 
-OVERLAY_PLOT_NAME = r"E:\Miscellaneous\Skripte&Tutorials\Phase_Reversal\Output\overlay_plot.png"
-COMBINED_SEGY_NAME = r"E:\Miscellaneous\Skripte&Tutorials\Phase_Reversal\Output\combined_phase_reversed.sgy"
-METADATA_CSV_NAME = r"E:\Miscellaneous\Skripte&Tutorials\Phase_Reversal\Output\metadata.csv"
-METADATA_JSON_NAME = r"E:\Miscellaneous\Skripte&Tutorials\Phase_Reversal\Output\metadata.json"
+QC_PLOT_NAME = 'phase_rotation_qc.png'
+STATISTICS_CSV_NAME = 'phase_rotation_statistics.csv'
+SEAFLOOR_PICKS_NAME = 'seafloor_picks.csv'
